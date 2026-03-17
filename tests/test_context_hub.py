@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from unittest.mock import patch, MagicMock
 import json
 import pytest
@@ -274,25 +275,33 @@ class TestContextHubConfig:
 
     def test_rcconfig_has_context_hub(self):
         """Ensure RCConfig includes context_hub field."""
-        from researchclaw.config import RCConfig
-        import dataclasses
+        yaml_mock = MagicMock()
+        with patch.dict("sys.modules", {"yaml": yaml_mock}):
+            import importlib
+            import researchclaw.config
+            importlib.reload(researchclaw.config)
+            import dataclasses
 
-        field_names = [f.name for f in dataclasses.fields(RCConfig)]
-        assert "context_hub" in field_names
+            field_names = [f.name for f in dataclasses.fields(researchclaw.config.RCConfig)]
+            assert "context_hub" in field_names
 
     def test_parse_from_dict(self):
         """Ensure context_hub config is parsed from YAML dict."""
-        from researchclaw.config import _parse_context_hub_config, ContextHubConfig
+        yaml_mock = MagicMock()
+        with patch.dict("sys.modules", {"yaml": yaml_mock}):
+            import importlib
+            import researchclaw.config
+            importlib.reload(researchclaw.config)
 
-        data = {
-            "enabled": True,
-            "max_docs": 3,
-            "lang": "js",
-        }
-        cfg = _parse_context_hub_config(data)
-        assert cfg.enabled is True
-        assert cfg.max_docs == 3
-        assert cfg.lang == "js"
-        # Defaults for unspecified fields
-        assert cfg.auto_fetch is True
-        assert cfg.timeout_sec == 30
+            data = {
+                "enabled": True,
+                "max_docs": 3,
+                "lang": "js",
+            }
+            cfg = researchclaw.config._parse_context_hub_config(data)
+            assert cfg.enabled is True
+            assert cfg.max_docs == 3
+            assert cfg.lang == "js"
+            # Defaults for unspecified fields
+            assert cfg.auto_fetch is True
+            assert cfg.timeout_sec == 30
