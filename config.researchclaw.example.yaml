@@ -107,3 +107,22 @@ experiment:
 
 prompts:
   custom_file: ""
+
+# ============================================================================
+# Context Hub (chub) — Live API Documentation for Code Generation
+# ============================================================================
+# Fetches curated, versioned API docs from Andrew Ng's Context Hub before
+# code generation, reducing API hallucinations. Annotates discovered gotchas
+# during iterative repair so future runs start smarter.
+#
+# Install: npm install -g @aisuite/chub
+# Docs:    https://github.com/andrewyng/context-hub
+# ============================================================================
+context_hub:
+  enabled: false           # Set to true after installing chub CLI
+  auto_fetch: true         # Auto-detect and fetch relevant API docs in Stage 10
+  auto_annotate: true      # Auto-annotate API gotchas discovered in Stage 13
+  max_docs: 5              # Max docs to fetch per code generation run
+  max_chars: 12000         # Truncate total fetched docs to this many chars
+  lang: "py"               # Default language variant (py, js, ts)
+  timeout_sec: 30          # Timeout for each chub CLI invocation

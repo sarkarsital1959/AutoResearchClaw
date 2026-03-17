@@ -2530,6 +2530,35 @@ def _execute_code_generation(
     except Exception:  # noqa: BLE001
         logger.debug("F-01: Framework doc injection skipped", exc_info=True)
 
+    # --- CH-01: Context Hub (chub) live API doc injection ---
+    try:
+        from researchclaw.context_hub import fetch_docs_for_topic as _chub_fetch
+        from researchclaw.context_hub import ContextHubConfig as _CHConfig
+
+        _ch_cfg = _CHConfig(
+            enabled=config.context_hub.enabled,
+            auto_fetch=config.context_hub.auto_fetch,
+            auto_annotate=config.context_hub.auto_annotate,
+            max_docs=config.context_hub.max_docs,
+            max_chars=config.context_hub.max_chars,
+            lang=config.context_hub.lang,
+            timeout_sec=config.context_hub.timeout_sec,
+        )
+        _hypothesis_text_ch = _hypothesis_text if "_hypothesis_text" in dir() else (
+            _read_prior_artifact(run_dir, "hypotheses.md") or ""
+        )
+        _chub_docs = _chub_fetch(
+            config.research.topic,
+            _hypothesis_text_ch,
+            exp_plan or "",
+            config=_ch_cfg,
+        )
+        if _chub_docs:
+            extra_guidance += _chub_docs
+            logger.info("CH-01: Injected Context Hub docs (%d chars)", len(_chub_docs))
+    except Exception:  # noqa: BLE001
+        logger.debug("CH-01: Context Hub doc injection skipped", exc_info=True)
+
     if is_llm_topic and config.experiment.mode == "docker":
         try:
             extra_guidance += _pm.block("llm_training_guidance")
@@ -3962,6 +3991,29 @@ def _execute_iterative_refine(
                     }
                     iter_record["metric"] = metric_val
                     iter_record["runtime_repaired"] = True
+
+            # --- CH-02: Context Hub annotation of API gotchas ---
+            if runtime_issues:
+                try:
+                    from researchclaw.context_hub import annotate_gotcha as _chub_annotate
+                    from researchclaw.context_hub import ContextHubConfig as _CHConfig2
+                    _ch_cfg2 = _CHConfig2(
+                        enabled=config.context_hub.enabled,
+                        auto_annotate=config.context_hub.auto_annotate,
+                        timeout_sec=config.context_hub.timeout_sec,
+                    )
+                    _all_code = "\n".join(candidate_files.values())
+                    _annotated = _chub_annotate(
+                        runtime_issues,
+                        _all_code,
+                        config.research.topic,
+                        config=_ch_cfg2,
+                    )
+                    if _annotated:
+                        iter_record["context_hub_annotated"] = _annotated
+                        logger.info("CH-02: Annotated gotchas on %s", _annotated)
+                except Exception:  # noqa: BLE001
+                    logger.debug("CH-02: Context Hub annotation skipped", exc_info=True)
 
             if metric_val is not None:
                 consecutive_no_metrics = 0

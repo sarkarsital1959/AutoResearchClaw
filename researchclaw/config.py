@@ -89,6 +89,24 @@ class KnowledgeBaseConfig:
 
 
 @dataclass(frozen=True)
+class ContextHubConfig:
+    """Configuration for Context Hub (chub) integration.
+
+    When enabled, fetches curated API documentation from Andrew Ng's
+    Context Hub before code generation and annotates gotchas discovered
+    during iterative repair.  Requires: ``npm install -g @aisuite/chub``
+    """
+
+    enabled: bool = False
+    auto_fetch: bool = True
+    auto_annotate: bool = True
+    max_docs: int = 5
+    max_chars: int = 12000
+    lang: str = "py"
+    timeout_sec: int = 30
+
+
+@dataclass(frozen=True)
 class OpenClawBridgeConfig:
     use_cron: bool = False
     use_message: bool = False
@@ -264,6 +282,7 @@ class RCConfig:
     experiment: ExperimentConfig = field(default_factory=ExperimentConfig)
     export: ExportConfig = field(default_factory=ExportConfig)
     prompts: PromptsConfig = field(default_factory=PromptsConfig)
+    context_hub: ContextHubConfig = field(default_factory=ContextHubConfig)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -293,6 +312,7 @@ class RCConfig:
         experiment = data.get("experiment") or {}
         export = data.get("export") or {}
         prompts = data.get("prompts") or {}
+        context_hub = data.get("context_hub") or {}
 
         return cls(
             project=ProjectConfig(
@@ -349,6 +369,7 @@ class RCConfig:
             prompts=PromptsConfig(
                 custom_file=prompts.get("custom_file", ""),
             ),
+            context_hub=_parse_context_hub_config(context_hub),
         )
 
     @classmethod
@@ -544,6 +565,20 @@ def _parse_code_agent_config(data: dict[str, Any]) -> CodeAgentConfig:
             data.get("tree_search_eval_timeout_sec", 120)
         ),
         review_max_rounds=int(data.get("review_max_rounds", 2)),
+    )
+
+
+def _parse_context_hub_config(data: dict[str, Any]) -> ContextHubConfig:
+    if not data:
+        return ContextHubConfig()
+    return ContextHubConfig(
+        enabled=bool(data.get("enabled", False)),
+        auto_fetch=bool(data.get("auto_fetch", True)),
+        auto_annotate=bool(data.get("auto_annotate", True)),
+        max_docs=int(data.get("max_docs", 5)),
+        max_chars=int(data.get("max_chars", 12000)),
+        lang=data.get("lang", "py"),
+        timeout_sec=int(data.get("timeout_sec", 30)),
     )
 
 
