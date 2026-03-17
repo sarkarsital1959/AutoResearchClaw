@@ -1,0 +1,6 @@
+[2026-03-17 12:04:21 PDT] === Upstream sync started ===
+[2026-03-17 12:04:21 PDT] New upstream commits detected (local=10a9a1e9ce94b74e8cbac3dec4fc37952c5e32c1 upstream=a4e8124f5895957ff1e9e79c63f1870d68cd2ac9)
+[2026-03-17 12:04:21 PDT] ERROR: Merge conflict detected — aborting merge
+[2026-03-17 12:04:21 PDT] Merge aborted. Manual resolution required.
+[2026-03-17 12:04:21 PDT] Run: cd /Users/amritsarkar/gitspace/autoresearcherclaw/AutoResearchClaw && git merge upstream/main
+[2026-03-17 12:04:21 PDT] === Upstream sync finished ===
