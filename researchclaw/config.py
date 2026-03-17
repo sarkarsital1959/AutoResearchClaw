@@ -254,8 +254,16 @@ class FigureAgentConfig:
     max_figures: int = 8
     # Orchestrator
     max_iterations: int = 3  # max CodeGen→Renderer→Critic retry loops
-    # Renderer
+    # Renderer security
     render_timeout_sec: int = 30
+    use_docker: bool | None = None  # None = auto-detect, True/False to force
+    docker_image: str = "researchclaw/experiment:latest"
+    # Code generation output format
+    output_format: str = "python"  # "python" (matplotlib) or "latex" (TikZ/PGFPlots)
+    # Nano Banana (Gemini image generation)
+    gemini_api_key: str = ""  # or set GEMINI_API_KEY / GOOGLE_API_KEY env var
+    gemini_model: str = "gemini-2.5-flash-image"
+    nano_banana_enabled: bool = True  # enable/disable Gemini image generation
     # Critic
     strict_mode: bool = False
     # Output
